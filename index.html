@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chord Roulette - Modo Paralelo</title>
+    <title>Chord Roulette - Mayores y menores</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -128,15 +128,7 @@
                                         </button>
                                     ))}
                                 </div>
-                                <div className="mt-8 p-5 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
-                                    <h4 className="font-bold text-slate-700 text-sm mb-2">💡 Teoría de {rootName} {isMinorMode ? 'Menor' : 'Mayor'}:</h4>
-                                    <p className="text-slate-500 text-xs leading-relaxed">
-                                        {isMinorMode 
-                                            ? `La escala de ${rootName} Menor es la relativa de ${currentScaleData.major[1]} Mayor. Comparten las mismas notas, pero el centro de gravedad es ${rootName}.` 
-                                            : `La escala de ${rootName} Mayor tiene como centro a ${rootName}. Sus acordes principales son ${currentScaleData.major[1]}, ${currentScaleData.major[0]} y ${currentScaleData.major[2]}.`
-                                        }
-                                    </p>
-                                </div>
+                            
                             </div>
 
                             {/* El Diagrama de la Ruleta (Key Frame) */}
