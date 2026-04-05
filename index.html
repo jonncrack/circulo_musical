@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chord Roulette - Modo Paralelo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .chord-btn { transition: all 0.2s ease; }
+        .chord-btn:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body class="bg-slate-100">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Datos basados en el Círculo de Quintas
+        const CHORD_DATA = [
+            { root: "C",  major: ["F", "C", "G"], minor: ["Dm", "Em", "Am"], dim: "B°" },
+            { root: "G",  major: ["C", "G", "D"], minor: ["Am", "Bm", "Em"], dim: "F#°" },
+            { root: "D",  major: ["G", "D", "A"], minor: ["Em", "F#m", "Bm"], dim: "C#°" },
+            { root: "A",  major: ["D", "A", "E"], minor: ["Bm", "C#m", "F#m"], dim: "G#°" },
+            { root: "E",  major: ["A", "E", "B"], minor: ["F#m", "G#m", "C#m"], dim: "D#°" },
+            { root: "B",  major: ["E", "B", "F#"], minor: ["C#m", "D#m", "G#m"], dim: "A#°" },
+            { root: "Gb", major: ["Cb", "Gb", "Db"], minor: ["Abm", "Bbm", "Ebm"], dim: "F°" },
+            { root: "Db", major: ["Gb", "Db", "Ab"], minor: ["Ebm", "Fm", "Bbm"], dim: "C°" },
+            { root: "Ab", major: ["Db", "Ab", "Eb"], minor: ["Bbm", "Cm", "Fm"], dim: "G°" },
+            { root: "Eb", major: ["Ab", "Eb", "Bb"], minor: ["Fm", "Gm", "Cm"], dim: "D°" },
+            { root: "Bb", major: ["Eb", "Bb", "F"], minor: ["Cm", "Dm", "Gm"], dim: "A°" },
+            { root: "F",  major: ["Bb", "F", "C"], minor: ["Gm", "Am", "Dm"], dim: "E°" },
+        ];
+
+        function App() {
+            const [selectedIdx, setSelectedIdx] = useState(0); // Índice de la nota raíz seleccionada
+            const [isMinorMode, setIsMinorMode] = useState(false);
+            const [progression, setProgression] = useState([]);
+            
+            // Para el modo menor, necesitamos buscar la relativa mayor.
+            // En nuestro array (Círculo de Quintas), la relativa mayor está 3 posiciones atrás.
+            const getMinorDataIdx = (idx) => (idx - 3 + 12) % 12;
+            
+            // Obtenemos los datos de la escala basándonos en si es Mayor o Menor
+            const dataIdx = isMinorMode ? getMinorDataIdx(selectedIdx) : selectedIdx;
+            const currentScaleData = CHORD_DATA[dataIdx];
+            const rootName = CHORD_DATA[selectedIdx].root;
+
+            const addToProgression = (chord) => {
+                if (progression.length < 8) setProgression([...progression, chord]);
+            };
+
+            // Construcción del Frame según el modo
+            let frameChords = [];
+            if (!isMinorMode) {
+                // Estructura MODO MAYOR (Directa)
+                frameChords = [
+                    { label: "vii° (Dis)", chord: currentScaleData.dim, color: "bg-orange-100 border-orange-400 text-orange-800" },
+                    { label: "ii (m)", chord: currentScaleData.minor[0], color: "bg-blue-50 border-blue-300 text-blue-700" },
+                    { label: "iii (m)", chord: currentScaleData.minor[1], color: "bg-blue-50 border-blue-300 text-blue-700" },
+                    { label: "vi (m)", chord: currentScaleData.minor[2], color: "bg-blue-50 border-blue-300 text-blue-700" },
+                    { label: "IV (M)", chord: currentScaleData.major[0], color: "bg-red-50 border-red-400 text-red-700" },
+                    { label: "I (Tónica)", chord: currentScaleData.major[1], color: "bg-red-100 border-red-600 text-red-900 font-bold" },
+                    { label: "V (M)", chord: currentScaleData.major[2], color: "bg-red-50 border-red-400 text-red-700" },
+                ];
+            } else {
+                // Estructura MODO MENOR (Mapeada desde la relativa mayor)
+                frameChords = [
+                    { label: "ii° (Dis)", chord: currentScaleData.dim, color: "bg-orange-100 border-orange-400 text-orange-800" },
+                    { label: "iv (m)", chord: currentScaleData.minor[0], color: "bg-blue-100 border-blue-500 text-blue-900" },
+                    { label: "v (m)", chord: currentScaleData.minor[1], color: "bg-blue-100 border-blue-500 text-blue-900" },
+                    { label: "i (Tónica)", chord: currentScaleData.minor[2], color: "bg-indigo-100 border-indigo-600 text-indigo-900 font-bold" },
+                    { label: "VI (M)", chord: currentScaleData.major[0], color: "bg-red-50 border-red-300 text-red-700" },
+                    { label: "III (M)", chord: currentScaleData.major[1], color: "bg-red-50 border-red-300 text-red-700" },
+                    { label: "VII (M)", chord: currentScaleData.major[2], color: "bg-red-50 border-red-300 text-red-700" },
+                ];
+            }
+
+            return (
+                <div className="min-h-screen p-4 md:p-8">
+                    <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
+                        
+                        {/* Encabezado dinámico */}
+                        <div className={`p-6 text-white text-center transition-all duration-500 ${isMinorMode ? 'bg-indigo-700' : 'bg-orange-500'}`}>
+                            <h1 className="text-3xl font-black tracking-tight uppercase">Chord Roulette</h1>
+                            <p className="mt-1 opacity-90 font-bold text-lg">
+                                Escala de {rootName} {isMinorMode ? 'Menor' : 'Mayor'}
+                            </p>
+                        </div>
+
+                        {/* Selector de Modo */}
+                        <div className="flex justify-center gap-4 bg-slate-50 p-4 border-b border-slate-200">
+                            <button 
+                                onClick={() => setIsMinorMode(false)}
+                                className={`px-8 py-3 rounded-xl font-bold transition-all shadow-sm ${!isMinorMode ? 'bg-orange-500 text-white' : 'bg-white text-slate-400 border'}`}
+                            >
+                                MODO MAYOR
+                            </button>
+                            <button 
+                                onClick={() => setIsMinorMode(true)}
+                                className={`px-8 py-3 rounded-xl font-bold transition-all shadow-sm ${isMinorMode ? 'bg-indigo-600 text-white' : 'bg-white text-slate-400 border'}`}
+                            >
+                                MODO MENOR
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
+                            {/* Panel de Selección de Raíz */}
+                            <div className="flex flex-col">
+                                <h2 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Nota Tónica Seleccionada</h2>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {CHORD_DATA.map((item, idx) => (
+                                        <button
+                                            key={item.root}
+                                            onClick={() => setSelectedIdx(idx)}
+                                            className={`chord-btn p-3 rounded-xl border-2 font-black transition-all ${
+                                                selectedIdx === idx 
+                                                ? (isMinorMode ? "bg-indigo-600 border-indigo-700 text-white scale-105 shadow-md" : "bg-orange-500 border-orange-600 text-white scale-105 shadow-md")
+                                                : "bg-white border-slate-100 text-slate-400 hover:border-slate-300"
+                                            }`}
+                                        >
+                                            {item.root}
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="mt-8 p-5 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+                                    <h4 className="font-bold text-slate-700 text-sm mb-2">💡 Teoría de {rootName} {isMinorMode ? 'Menor' : 'Mayor'}:</h4>
+                                    <p className="text-slate-500 text-xs leading-relaxed">
+                                        {isMinorMode 
+                                            ? `La escala de ${rootName} Menor es la relativa de ${currentScaleData.major[1]} Mayor. Comparten las mismas notas, pero el centro de gravedad es ${rootName}.` 
+                                            : `La escala de ${rootName} Mayor tiene como centro a ${rootName}. Sus acordes principales son ${currentScaleData.major[1]}, ${currentScaleData.major[0]} y ${currentScaleData.major[2]}.`
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* El Diagrama de la Ruleta (Key Frame) */}
+                            <div className="flex flex-col items-center justify-center p-6 bg-slate-50 rounded-[2rem] border border-slate-100 shadow-inner">
+                                <div className="flex flex-col items-center space-y-4 w-full">
+                                    {/* VII (Dim) */}
+                                    <button onClick={() => addToProgression(frameChords[0].chord)} className={`chord-btn w-24 h-14 flex flex-col items-center justify-center border-2 rounded-t-2xl shadow-sm ${frameChords[0].color}`}>
+                                        <span className="text-[10px] font-black">{frameChords[0].label}</span>
+                                        <span className="text-xl font-bold">{frameChords[0].chord}</span>
+                                    </button>
+                                    
+                                    {/* Fila Media */}
+                                    <div className="flex gap-2 w-full">
+                                        {[1, 2, 3].map(i => (
+                                            <button key={i} onClick={() => addToProgression(frameChords[i].chord)} className={`chord-btn flex-1 h-20 flex flex-col items-center justify-center border-2 rounded-xl shadow-sm ${frameChords[i].color}`}>
+                                                <span className="text-[10px] font-black uppercase text-center">{frameChords[i].label}</span>
+                                                <span className="text-xl font-bold">{frameChords[i].chord}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    {/* Fila Inferior (Tónica y Mayores) */}
+                                    <div className="flex gap-2 w-full">
+                                        {[4, 5, 6].map(i => (
+                                            <button key={i} onClick={() => addToProgression(frameChords[i].chord)} className={`chord-btn flex-1 h-28 flex flex-col items-center justify-center border-2 rounded-2xl shadow-md ${frameChords[i].color}`}>
+                                                <span className="text-[10px] font-black uppercase text-center">{frameChords[i].label}</span>
+                                                <span className="text-3xl font-black tracking-tighter">{frameChords[i].chord}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Visualizador de Progresión */}
+                        <div className="bg-slate-900 p-6 border-t border-slate-800">
+                            <div className="flex justify-between items-center mb-4 px-2">
+                                <h3 className="font-black text-white text-xs uppercase tracking-[0.3em]">Tu Secuencia Musical</h3>
+                                <button onClick={() => setProgression([])} className="text-[10px] text-slate-500 hover:text-white uppercase font-bold tracking-widest">Reiniciar</button>
+                            </div>
+                            <div className="flex flex-wrap gap-3 min-h-[90px] p-4 bg-slate-950 rounded-2xl border border-slate-800 items-center overflow-x-auto">
+                                {progression.map((c, i) => (
+                                    <div key={i} className={`px-8 py-4 rounded-xl font-black text-2xl shadow-2xl border-b-4 animate-in fade-in slide-in-from-bottom-2 ${isMinorMode ? 'bg-indigo-600 border-indigo-900 text-white' : 'bg-orange-500 border-orange-700 text-white'}`}>
+                                        {c}
+                                    </div>
+                                ))}
+                                {progression.length === 0 && <span className="text-slate-700 text-sm font-medium w-full text-center">Haz clic en los acordes del diagrama para construir tu canción...</span>}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
